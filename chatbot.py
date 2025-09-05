@@ -173,7 +173,11 @@ def run_eval():
         },
         {
             "type": "chat",
-            "text": "Plan me a roadtrip from OK to ND?"
+            "text": "Plan me a roadtrip from OK to ND."
+        },
+        {
+            "type": "chat",
+            "text": "Name the current Washington Spirit roster."
         },
         {
             "type": "translate",
@@ -183,17 +187,33 @@ def run_eval():
         },
         {
             "type": "translate",
+            "target_lang": "Spanish",
+            "source_lang": "English",
+            "text": "I like to play the guitar"
+        },
+        {
+            "type": "translate",
             "target_lang": "Chinese",
             "source_lang": "English",
             "text": "I like to play the guitar"
         },
         {
-            "type": "QA",
-            "text": "What is the capital of France?"
+            "type": "translate",
+            "target_lang": "English",
+            "source_lang": "Chinese",
+            "text": "我喜欢弹吉他"
         },
         {
             "type": "QA",
-            "text": "How does photosynthesis work?"
+            "text": "How many Grammys does Beyonce have?"
+        },
+        {
+            "type": "QA",
+            "text": "Who is the governor of Illinois?"
+        },
+        {
+            "type": "QA",
+            "text": "How does the carbon cycle work?"
         }
     ]
     # model is in the form {

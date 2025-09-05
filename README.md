@@ -1,6 +1,6 @@
 # LING4467 Assignment 1: Chatbot
 
-## Install/Run
+## Install/Setup
 Developed in `Python 3.11.11`
 
 ```sh
@@ -17,6 +17,10 @@ Create a `.env` file in root and put in your huggingface token and Cerebras toke
 hf_token=HF_TOKEN
 cerebras_token=CEREBRAS_TOKEN
 ```
+
+## Run
+If you want to run the full eval, in `chatbot.py` set `mode="eval"`.
+To run in "chatbot" mode (passing in the model and a prompt and expecting a printed answer to the commandline), run with `mode="chat"`
 
 ## Author
 Emma Rafkin: epr41@georgetown.edu

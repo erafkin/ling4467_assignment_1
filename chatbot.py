@@ -193,6 +193,12 @@ def run_eval():
         },
         {
             "type": "translate",
+            "target_lang": "English",
+            "source_lang": "Spanish",
+            "text": "I like to play the guitar"
+        },
+        {
+            "type": "translate",
             "target_lang": "Chinese",
             "source_lang": "English",
             "text": "I like to play the guitar"
@@ -209,7 +215,15 @@ def run_eval():
         },
         {
             "type": "QA",
+            "text": "How many Grammys does Wet Leg have?"
+        },
+        {
+            "type": "QA",
             "text": "Who is the governor of Illinois?"
+        },
+        {
+            "type": "QA",
+            "text": "Who is the governor of Chicago?"
         },
         {
             "type": "QA",

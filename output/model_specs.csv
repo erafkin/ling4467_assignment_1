@@ -1,0 +1,7 @@
+model,model_load_time,mean_answer_time
+gpt-oss-120b,,0.0
+llama-4-maverick-17b-128e-instruct,,0.0
+qwen-3-235b-a22b-instruct-2507,,0.0
+google/gemma-3-270m-it,6.1865997314453125,6.333333333333333
+Qwen/Qwen2.5-0.5B-Instruct,3.6258740425109863,6.333333333333333
+meta-llama/Llama-3.2-1B-Instruct,6.117411375045776,9.5

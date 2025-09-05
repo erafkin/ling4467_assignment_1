@@ -2,10 +2,21 @@
 # Ling 4467 Assignment 1: Chatbot
 
 import pandas as pd
-import resource
 import time
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import  pipeline
+import torch
+from dotenv import load_dotenv
+import os
+import numpy as np
+from cerebras.cloud.sdk import Cerebras
+from pynvml import *
+import psutil
 
+#load environment vars, set up devices, set up GPU usage tracking.
+load_dotenv() 
+device = 0 if torch.cuda.is_available() else -1
+nvmlInit()
+gpu = nvmlDeviceGetHandleByIndex(0)
 
 """
     Core Tasks
@@ -34,29 +45,46 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
     Hardware reality: Choose models that actually run on your hardware
 """
 
-def run_local_model(model, tokenizer, prompt):     
-    # Load and run local model    
-    start_time = time.time()
+def run_local_model(generator, prompt):     
+    # Load and run local model. huggingface pipeline
+    # set up prompt for the tasks
     text=prompt["text"]
     if prompt["type"] == "QA":
         text = "Answer Question: " + text
     elif prompt["type"] == "translate":
         text = f"Translate from {prompt['source_lang']} to {prompt['target_lang']}: " + text
-    print(prompt)
-    model_inputs = tokenizer([text], return_tensors="pt")
-    generated_ids = model.generate(**model_inputs)
-    answer = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    print(answer)
+    # measure inference time
+    start_time = time.time()
+    answer = generator([{"role": "user", "content": text}],do_sample=False)
+    answer = answer[0]["generated_text"][1]["content"]
     end_time = time.time()
-    max_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss 
     time_to_answer = end_time-start_time
-    return answer, max_rss, time_to_answer
+    return answer, time_to_answer
 
 
-def run_api_model(api, prompt):     
-    # Call API model     
-    max_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss 
-    return max_rss
+def run_api_model(client, model, prompt):     
+    # Call API model    
+    # set up prompt based on task 
+    text=prompt["text"]
+    if prompt["type"] == "QA":
+        text = "Answer Question: " + text
+    elif prompt["type"] == "translate":
+        text = f"Translate from {prompt['source_lang']} to {prompt['target_lang']}: " + text
+    start_time = time.time() # measure time but i think this would be pretty fast.
+    # ping API :) Structure from Cerebras docs.
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content":text,
+            }
+        ],
+        model=model,
+    )
+    end_time = time.time()
+    time_to_answer = end_time-start_time
+    answer = chat_completion.choices[0].message.content
+    return answer, time_to_answer
 
 def evaluate_model(model_info, test_prompts):      
     """
@@ -67,67 +95,131 @@ def evaluate_model(model_info, test_prompts):
         Model size: Disk space and memory requirements + model loading time
 
         Resource usage: CPU/GPU utilization during inference
-
-        TODO: Create a dataframe with all of the questions, the time it takes to answer them, and their accuracy
-                also create a dataframe with the model size & average resource usage per call
     
     """
     # Run evaluation and collect metrics 
     rows = []
+    load_model_time = None
     if model_info['type'] == 'local':
+        # if local load model, measure how long that takes.
         load_model_start = time.time()
-        #TODO LOAD MODEL
-        # quantization_config = BitsAndBytesConfig(load_in_4bit=True)
-        if "token" in model_info:
-            model =  AutoModelForCausalLM.from_pretrained(model_info["model"], device_map="auto", token = model_info["token"])
+
+        if model_info["token"]:
+            generator = pipeline(model=model_info["model"],  device_map="auto", token = os.environ["hf_token"])
         else:
-            model =  AutoModelForCausalLM.from_pretrained(model_info["model"], device_map="auto")
-        tokenizer = AutoTokenizer.from_pretrained(model_info["model"], padding_side="left")
+            generator = pipeline(model=model_info["model"], device_map="auto")
         load_model_end = time.time()
         load_model_time = load_model_end - load_model_start
+        # for each prompt, get answer and measure inference time and compute resources.
         for prompt in test_prompts:
-            answer, max_rss, time_to_answer = run_local_model(model, tokenizer, prompt)   
-            rows.append([answer, max_rss, time_to_answer])  
+            cpu, gpu, memory, = show_stats()
+            answer, time_to_answer = run_local_model(generator, prompt)   
+            rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
     else:
-        max_rss = run_api_model(...)
-    df = pd.DataFrame(rows, columns=["answer", "max_rss", "time"]) # TODO COLUMNS
-    load_model_time # do something with this?
-    return load_model_time, df
-    
+        # if remote, set up cerebras client 
+        client = Cerebras(
+            # This is the default and can be omitted
+            api_key=os.environ["cerebras_token"]
+        )
+        # same as above but not running locallys
+        for prompt in test_prompts:
+            cpu, gpu, memory, = show_stats()
+            answer, time_to_answer = run_api_model(client, model_info["model"], prompt)
+            rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
 
-if __name__ == "__main__":
-    test_prompts = [{
-        "type": "chat",
-        "text": "Tell me a joke",
-    },
-    {
-        "type": "chat",
-        "text": "What's your favorite color?"
-    },
-    {
-        "type": "translate",
-        "target_lang": "English",
-        "source_lang": "Spanish",
-        "text": "Me gusta tocar la guitarra"
-    },
-    {
-        "type": "translate",
-        "target_lang": "Chinese",
-        "source_lang": "English",
-        "text": "I like to play the guitar"
-    },
-    {
-        "type": "QA",
-        "text": "What is the capital of France?"
-    }
+    # organize into rows, going into a dataframe
+    answer_times = [a[2] for a in rows]
+    return load_model_time, rows, np.mean(answer_times)
+
+def show_stats():
+    """
+        returns CPU, GPU, and memory IN PERCENT
+        NOTE: used OpenAI GPT OSS 120B for this code. Edited it to return what I wanted. 
+    """
+    cpu = psutil.cpu_percent(interval=1)
+    util = nvmlDeviceGetUtilizationRates(gpu)
+    print(f"[{time.strftime('%H:%M:%S')}] CPU {cpu:5.1f}% | GPU {util.gpu:3d}% | Mem {util.memory:3d}%")
+    return cpu, util.gpu, util.memory
+
+def run_eval():
+
+    test_prompts = [
+        {
+            "type": "chat",
+            "text": "Are you alive?",
+        },
+        {
+            "type": "chat",
+            "text": "Plan me a roadtrip from OK to ND?"
+        },
+        {
+            "type": "translate",
+            "target_lang": "English",
+            "source_lang": "Spanish",
+            "text": "Me gusta tocar la guitarra"
+        },
+        {
+            "type": "translate",
+            "target_lang": "Chinese",
+            "source_lang": "English",
+            "text": "I like to play the guitar"
+        },
+        {
+            "type": "QA",
+            "text": "What is the capital of France?"
+        },
+        {
+            "type": "QA",
+            "text": "How does photosynthesis work?"
+        }
     ]
     models = [
         {
+            "type": "api",
+            "model": "gpt-oss-120b",
+            "token": False
+        },
+        {
+            "type": "api",
+            "model": "llama-4-maverick-17b-128e-instruct",
+            "token": False
+        },
+        {
+            "type": "api",
+            "model": "qwen-3-235b-a22b-instruct-2507",
+            "token": False
+        },
+        {
             "type": "local",
             "model": "google/gemma-3-270m-it",
+            "token": True
         },
+        {
+            "type": "local",
+            "model": "Qwen/Qwen2.5-0.5B-Instruct",
+            "token": False
+        },
+        {
+            "type": "local",
+            "model": "meta-llama/Llama-3.2-1B-Instruct",
+            "token": True
+        }
+        
     ]
+    rows = []
+    model_times = []
     for m in models:
-        load_model_time, df = evaluate_model(model_info=m, test_prompts=test_prompts) 
+        load_model_time, model_rows, mean_answer_time = evaluate_model(model_info=m, test_prompts=test_prompts) 
         print("time to load model: ", load_model_time)
-        print(df)  
+        model_times.append([m["model"], load_model_time, mean_answer_time])
+        rows += model_rows
+    # spit out information in a dataframe for evaluation
+    df = pd.DataFrame(rows, columns=["answer",  "cpu", "gpu", "memory", "time", "model_name"]) 
+    df.to_csv("./output/answers.csv", index=False)
+    df_times = pd.DataFrame(model_times, columns=["model", "model_load_time", "mean_answer_time"])
+    df_times.to_csv("./output/model_specs.csv", index=False)
+
+# main might later be a chatbot that user can interact with depending on model passed in etc. 
+
+if __name__ == "__main__":
+    run_eval()

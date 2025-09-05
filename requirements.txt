@@ -1,3 +1,7 @@
 pandas
 transformers
 torch
+accelerate
+python-dotenv
+psutil
+pynvml

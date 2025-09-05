@@ -88,13 +88,8 @@ def run_api_model(client, model, prompt):
 
 def evaluate_model(model_info, test_prompts):      
     """
-        Latency: Inference time per request
-
-        Accuracy: Does it give reasonable/correct responses?
-
-        Model size: Disk space and memory requirements + model loading time
-
-        Resource usage: CPU/GPU utilization during inference
+        depeding on the model passed in, run prompt through model or ping api. measure inference time and compute resources. Return these
+        with answer. Evaluate answer later. 
     
     """
     # Run evaluation and collect metrics 
@@ -118,10 +113,9 @@ def evaluate_model(model_info, test_prompts):
     else:
         # if remote, set up cerebras client 
         client = Cerebras(
-            # This is the default and can be omitted
             api_key=os.environ["cerebras_token"]
         )
-        # same as above but not running locallys
+        # same as above but not running locally
         for prompt in test_prompts:
             cpu, gpu, memory, = show_stats()
             answer, time_to_answer = run_api_model(client, model_info["model"], prompt)
@@ -130,6 +124,25 @@ def evaluate_model(model_info, test_prompts):
     # organize into rows, going into a dataframe
     answer_times = [a[2] for a in rows]
     return load_model_time, rows, np.mean(answer_times)
+
+def run_chatbot(model, prompt):
+    """
+        The assignment said "build a chatbot" so this is that? 
+    """
+    if model['type'] == 'local':
+        if model["token"]:
+            generator = pipeline(model=model["model"],  device_map="auto", token = os.environ["hf_token"])
+        else:
+            generator = pipeline(model=model["model"], device_map="auto")
+        
+        answer, _ = run_local_model(generator, prompt)   
+    else:
+        client = Cerebras(
+            api_key=os.environ["cerebras_token"]
+        )
+       
+        answer, _ = run_api_model(client, model["model"], prompt)
+    return answer
 
 def show_stats():
     """
@@ -142,7 +155,17 @@ def show_stats():
     return cpu, util.gpu, util.memory
 
 def run_eval():
+    """
+        Run the evaluation code. 
+    """
 
+    # A prompt is in the form: {
+    #   "type": "chat"|"QA"|"translate"
+    #   "text": str
+    #   "target_lang": lang,
+    #   "source_lang": lang,
+    # }
+    # target and source langs only for translate
     test_prompts = [
         {
             "type": "chat",
@@ -173,6 +196,11 @@ def run_eval():
             "text": "How does photosynthesis work?"
         }
     ]
+    # model is in the form {
+    #         "type": "local" | "api",
+    #         "model": huggingface_str or Cerebras str,
+    #         "token": bool (if auth token needed)
+    # }
     models = [
         {
             "type": "api",
@@ -219,7 +247,23 @@ def run_eval():
     df_times = pd.DataFrame(model_times, columns=["model", "model_load_time", "mean_answer_time"])
     df_times.to_csv("./output/model_specs.csv", index=False)
 
-# main might later be a chatbot that user can interact with depending on model passed in etc. 
 
 if __name__ == "__main__":
-    run_eval()
+    mode = "eval" # "eval" or "chat"
+    if mode == "eval":
+        run_eval()
+    else:
+        # e.g. model and answer. later these could be args. 
+        model = {
+            "type": "api",
+            "model": "gpt-oss-120b",
+            "token": False
+        }
+        prompt = {
+            "type": "translate",
+            "target_lang": "English",
+            "source_lang": "Spanish",
+            "text": "Me gusta tocar la guitarra"
+        }
+        answer = run_chatbot(model, prompt)
+        print(answer)

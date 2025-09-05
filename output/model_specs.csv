@@ -1,7 +1,7 @@
-model,model_load_time,mean_answer_time
-gpt-oss-120b,,0.0
-llama-4-maverick-17b-128e-instruct,,0.0
-qwen-3-235b-a22b-instruct-2507,,0.0
-google/gemma-3-270m-it,6.260673761367798,6.5
-Qwen/Qwen2.5-0.5B-Instruct,3.8814496994018555,6.7
-meta-llama/Llama-3.2-1B-Instruct,5.69214129447937,11.2
+model,model_load_time,mean_answer_time,source,name
+gpt-oss-120b,,0.9751233577728271,api,gpt-oss
+llama-4-maverick-17b-128e-instruct,,0.3690158843994141,api,llama-4
+qwen-3-235b-a22b-instruct-2507,,0.6100390195846558,api,qwen-3
+google/gemma-3-270m-it,6.351985931396484,2.62263081073761,local,gemma-3
+Qwen/Qwen2.5-0.5B-Instruct,3.6718995571136475,2.169136142730713,local,qwen-2.5
+meta-llama/Llama-3.2-1B-Instruct,5.605949878692627,1.3615523338317872,local,llama-3.2

@@ -122,7 +122,7 @@ def evaluate_model(model_info, test_prompts):
             rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
 
     # organize into rows, going into a dataframe
-    answer_times = [a[2] for a in rows]
+    answer_times = [a[4] for a in rows]
     return load_model_time, rows, np.mean(answer_times)
 
 def run_chatbot(model, prompt):

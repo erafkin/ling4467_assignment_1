@@ -226,7 +226,7 @@ def run_eval():
             "text": "Who is the governor of Chicago?"
         },
         {
-            "type": "QA",
+            "type": "chat",
             "text": "How does the carbon cycle work?"
         }
     ]

@@ -11,10 +11,12 @@ import numpy as np
 from cerebras.cloud.sdk import Cerebras
 from pynvml import *
 import psutil
+proc = psutil.Process()
 
 #load environment vars, set up devices, set up GPU usage tracking.
 load_dotenv() 
 device = 0 if torch.cuda.is_available() else -1
+print("cuda available: ", torch.cuda.is_available())
 nvmlInit()
 gpu = nvmlDeviceGetHandleByIndex(0)
 
@@ -100,16 +102,19 @@ def evaluate_model(model_info, test_prompts):
         load_model_start = time.time()
 
         if model_info["token"]:
-            generator = pipeline(model=model_info["model"],  device_map="auto", token = os.environ["hf_token"])
+            generator = pipeline(model=model_info["model"],  device=device, token = os.environ["hf_token"])
         else:
-            generator = pipeline(model=model_info["model"], device_map="auto")
+            generator = pipeline(model=model_info["model"], device=device, device_map="auto")
         load_model_end = time.time()
         load_model_time = load_model_end - load_model_start
         # for each prompt, get answer and measure inference time and compute resources.
         for prompt in test_prompts:
-            cpu, gpu, memory, = show_stats()
+            proc.cpu_percent(interval=None)
+            gpu, memory = show_stats()
             answer, time_to_answer = run_local_model(generator, prompt)   
-            rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
+            cpu =  proc.cpu_percent(interval=None)
+            print(f"[{time.strftime('%H:%M:%S')}] | CPU {cpu} % | GPU {gpu:3d}% | Mem {memory:3d}%")
+            rows.append([prompt, answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
     else:
         # if remote, set up cerebras client 
         client = Cerebras(
@@ -117,8 +122,11 @@ def evaluate_model(model_info, test_prompts):
         )
         # same as above but not running locally
         for prompt in test_prompts:
-            cpu, gpu, memory, = show_stats()
+            proc.cpu_percent(interval=None)
+            gpu, memory = show_stats()
             answer, time_to_answer = run_api_model(client, model_info["model"], prompt)
+            cpu = proc.cpu_percent(interval=None)
+            print(f"[{time.strftime('%H:%M:%S')}] | CPU {cpu} % | GPU {gpu:3d}% | Mem {memory:3d}%")
             rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
 
     # organize into rows, going into a dataframe
@@ -146,13 +154,11 @@ def run_chatbot(model, prompt):
 
 def show_stats():
     """
-        returns CPU, GPU, and memory IN PERCENT
+        returns GPU, and memory IN PERCENT
         NOTE: used OpenAI GPT OSS 120B for this code. Edited it to return what I wanted. 
     """
-    cpu = psutil.cpu_percent(interval=1)
     util = nvmlDeviceGetUtilizationRates(gpu)
-    print(f"[{time.strftime('%H:%M:%S')}] CPU {cpu:5.1f}% | GPU {util.gpu:3d}% | Mem {util.memory:3d}%")
-    return cpu, util.gpu, util.memory
+    return util.gpu, util.memory
 
 def run_eval():
     """
@@ -233,38 +239,45 @@ def run_eval():
     # model is in the form {
     #         "type": "local" | "api",
     #         "model": huggingface_str or Cerebras str,
-    #         "token": bool (if auth token needed)
+    #         "token": bool (if auth token needed),
+            # "name": common name, str
     # }
     models = [
         {
             "type": "api",
             "model": "gpt-oss-120b",
-            "token": False
+            "token": False,
+            "name": "gpt-oss"
         },
         {
             "type": "api",
             "model": "llama-4-maverick-17b-128e-instruct",
-            "token": False
+            "token": False,
+            "name": "llama-4"
         },
         {
             "type": "api",
             "model": "qwen-3-235b-a22b-instruct-2507",
-            "token": False
+            "token": False,
+            "name": "qwen-3"  
         },
         {
             "type": "local",
             "model": "google/gemma-3-270m-it",
-            "token": True
+            "token": True,
+            "name": "gemma-3"
         },
         {
             "type": "local",
             "model": "Qwen/Qwen2.5-0.5B-Instruct",
-            "token": False
+            "token": False,
+            "name": "qwen-2.5"
         },
         {
             "type": "local",
             "model": "meta-llama/Llama-3.2-1B-Instruct",
-            "token": True
+            "token": True,
+            "name": "llama-3.2"
         }
         
     ]
@@ -273,12 +286,12 @@ def run_eval():
     for m in models:
         load_model_time, model_rows, mean_answer_time = evaluate_model(model_info=m, test_prompts=test_prompts) 
         print("time to load model: ", load_model_time)
-        model_times.append([m["model"], load_model_time, mean_answer_time])
+        model_times.append([m["model"], load_model_time, mean_answer_time, m["type"], m["name"] ])
         rows += model_rows
     # spit out information in a dataframe for evaluation
-    df = pd.DataFrame(rows, columns=["answer",  "cpu", "gpu", "memory", "time", "model_name"]) 
+    df = pd.DataFrame(rows, columns=["prompt", "answer",  "cpu", "gpu", "memory", "time", "model_name"]) 
     df.to_csv("./output/answers.csv", index=False)
-    df_times = pd.DataFrame(model_times, columns=["model", "model_load_time", "mean_answer_time"])
+    df_times = pd.DataFrame(model_times, columns=["model", "model_load_time", "mean_answer_time","source","name"])
     df_times.to_csv("./output/model_specs.csv", index=False)
 
 

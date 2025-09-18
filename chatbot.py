@@ -90,7 +90,7 @@ def run_api_model(client, model, prompt):
 
 def evaluate_model(model_info, test_prompts):      
     """
-        depeding on the model passed in, run prompt through model or ping api. measure inference time and compute resources. Return these
+        depending on the model passed in, run prompt through model or ping api. measure inference time and compute resources. Return these
         with answer. Evaluate answer later. 
     
     """
@@ -114,7 +114,7 @@ def evaluate_model(model_info, test_prompts):
             answer, time_to_answer = run_local_model(generator, prompt)   
             cpu =  proc.cpu_percent(interval=None)
             print(f"[{time.strftime('%H:%M:%S')}] | CPU {cpu} % | GPU {gpu:3d}% | Mem {memory:3d}%")
-            rows.append([prompt, answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
+            rows.append([prompt, answer, cpu, gpu, memory, time_to_answer, model_info["name"]])  
     else:
         # if remote, set up cerebras client 
         client = Cerebras(
@@ -127,7 +127,8 @@ def evaluate_model(model_info, test_prompts):
             answer, time_to_answer = run_api_model(client, model_info["model"], prompt)
             cpu = proc.cpu_percent(interval=None)
             print(f"[{time.strftime('%H:%M:%S')}] | CPU {cpu} % | GPU {gpu:3d}% | Mem {memory:3d}%")
-            rows.append([answer, cpu, gpu, memory, time_to_answer, model_info["model"]])  
+            print(model_info["name"])
+            rows.append([prompt, answer, cpu, gpu, memory, time_to_answer, model_info["name"]])  
 
     # organize into rows, going into a dataframe
     answer_times = [a[4] for a in rows]

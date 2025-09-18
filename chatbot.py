@@ -102,9 +102,9 @@ def evaluate_model(model_info, test_prompts):
         load_model_start = time.time()
 
         if model_info["token"]:
-            generator = pipeline(model=model_info["model"],  device=device, token = os.environ["hf_token"])
+            generator = pipeline(model=model_info["model"], token = os.environ["hf_token"])
         else:
-            generator = pipeline(model=model_info["model"], device=device, device_map="auto")
+            generator = pipeline(model=model_info["model"], device_map="auto")
         load_model_end = time.time()
         load_model_time = load_model_end - load_model_start
         # for each prompt, get answer and measure inference time and compute resources.
@@ -244,6 +244,24 @@ def run_eval():
     # }
     models = [
         {
+            "type": "local",
+            "model": "google/gemma-3-270m-it",
+            "token": True,
+            "name": "gemma-3"
+        },
+        {
+            "type": "local",
+            "model": "Qwen/Qwen2.5-0.5B-Instruct",
+            "token": False,
+            "name": "qwen-2.5"
+        },
+        {
+            "type": "local",
+            "model": "meta-llama/Llama-3.2-1B-Instruct",
+            "token": True,
+            "name": "llama-3.2"
+        },
+        {
             "type": "api",
             "model": "gpt-oss-120b",
             "token": False,
@@ -261,24 +279,6 @@ def run_eval():
             "token": False,
             "name": "qwen-3"  
         },
-        {
-            "type": "local",
-            "model": "google/gemma-3-270m-it",
-            "token": True,
-            "name": "gemma-3"
-        },
-        {
-            "type": "local",
-            "model": "Qwen/Qwen2.5-0.5B-Instruct",
-            "token": False,
-            "name": "qwen-2.5"
-        },
-        {
-            "type": "local",
-            "model": "meta-llama/Llama-3.2-1B-Instruct",
-            "token": True,
-            "name": "llama-3.2"
-        }
         
     ]
     rows = []

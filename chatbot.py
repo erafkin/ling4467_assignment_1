@@ -136,7 +136,7 @@ def evaluate_model(model_info, test_prompts):
 
 def run_chatbot(model, prompt):
     """
-        The assignment said "build a chatbot" so this is that? 
+        simple call for chatbot
     """
     if model['type'] == 'local':
         if model["token"]:
@@ -297,21 +297,71 @@ def run_eval():
 
 
 if __name__ == "__main__":
-    mode = "eval" # "eval" or "chat"
+    mode = "chat" # "eval" or "chat"
     if mode == "eval":
         run_eval()
     else:
         # e.g. model and answer. later these could be args. 
+        print("Welcome to the chatbot! type \"quit\" to quit. ")
         model = {
             "type": "api",
             "model": "gpt-oss-120b",
             "token": False
         }
-        prompt = {
-            "type": "translate",
-            "target_lang": "English",
-            "source_lang": "Spanish",
-            "text": "Me gusta tocar la guitarra"
-        }
-        answer = run_chatbot(model, prompt)
-        print(answer)
+        print("model: ", model)
+        history = []
+        task = None
+        while True:
+            try:
+                # Prompt the user.  `input()` reads a line from stdin and strips the trailing newline.
+                if task is None: 
+                    task = input(">>> Choose task type: chat (c)(default) /translate (t)/ QA (qa). ").strip()
+                if task.lower() == "translate" or task.lower() == "t":   
+                    prompt = {
+                        "type": "translate",
+                    }
+
+                elif task.lower() == "qa" or task.lower() == "q":
+                    prompt = {
+                        "type": "qa"
+                    }
+                elif task.lower() == "quit":
+                    print("Good‑bye!")
+                    break
+                else:
+                    prompt = {
+                        "type": "chat"
+                    }
+                if prompt["type"] == "translate":
+                    source_lang = input(">>> Source language: ").strip().lower()
+                    if source_lang == "quit":
+                        print("Good‑bye!")
+                        break
+                    target_lang = input(">>> Target language: ").strip().lower()
+                    if target_lang == "quit":
+                        print("Good‑bye!")
+                        break
+                    prompt["target_lang"]= target_lang
+                    prompt["source_lang"]= source_lang
+                text = input(">>> Type \"new (n)\" for new chat or Prompt ").strip().lower()
+                if text == "new" or text == "n":
+                    task = None
+                    print("starting new task/chat")
+                    history = []
+                elif text == "quit" or text == "q":
+                    print("Good‑bye!")
+                    break
+                else:
+                    if prompt["type"] == "chat":
+                        prompt["text"] = "\n".join(history) + "\n" + text
+                    else:
+                        prompt["text"] = text
+                    print("prompt: ", prompt["text"])
+                    answer = run_chatbot(model, prompt)
+                    if prompt["type"] == "chat":
+                        history.append("user: " + text)
+                        history.append("chatbot: " + answer)
+                    print(answer)
+            except EOFError:       
+                print("\nEOF received – exiting.")
+                break

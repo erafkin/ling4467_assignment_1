@@ -20,7 +20,7 @@ cerebras_token=CEREBRAS_TOKEN
 
 ## Run
 If you want to run the full eval, in `chatbot.py` set `mode="eval"`.
-To run in "chatbot" mode (passing in the model and a prompt and expecting a printed answer to the commandline), run with `mode="chat"`
+To run in "chatbot" mode (command line interface where you type in tasks and prompts), run with `mode="chat"`
 
 ## Author
 Emma Rafkin: epr41@georgetown.edu

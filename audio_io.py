@@ -23,7 +23,7 @@ def save_audio_to_file(output_filename, audio_data, sample_rate, channels:int=1)
         wf.setframerate(sample_rate)
         wf.writeframes(full_audio.tobytes())
     
-    print(f"Recording saved as {filename}")
+    print(f"Recording saved as {output_filename}")
 
 def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
     """
@@ -51,9 +51,9 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
     
     audio_data = []
     silence_count = 0
-    max_silence = 5  # Stop after 5 consecutive silent chunks
+    max_silence = 10  # Stop after 5 consecutive silent chunks
     
-    def audio_callback(indata):
+    def audio_callback(indata, frames, time, status):
         nonlocal silence_count
         
         # Convert to bytes for VAD processing
@@ -66,7 +66,6 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
             silence_count = 0  # Reset silence counter
         else:
             silence_count += 1
-        print(silence_count)
         
         # Store audio data
         audio_data.append(indata.copy())
@@ -107,7 +106,7 @@ def load_audio_file(audio_path:str):
     """
         load audio file
     """
-    audio_data, sample_rate = librosa.load(audio_file)
+    audio_data, sample_rate = librosa.load(audio_path)
     return audio_data, sample_rate
 
 def wav_to_spectrogram(audio_file, output_file="output_spec"):
@@ -154,13 +153,13 @@ def wav_to_spectrogram(audio_file, output_file="output_spec"):
     plt.savefig(output_file)
 
 def speech_to_text(audio_file:str):
-    # device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
     transcriber = pipeline(
         "automatic-speech-recognition",
-        model="openai/whisper-small",
-        device="cpu"
+        model="openai/whisper-tiny",
+        device=device
     )
-    transcribed_text = transcriber(audio_file)
+    transcribed_text = transcriber(audio_file, generate_kwargs={"language": "en"})
     return transcribed_text
 
 def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
@@ -174,7 +173,7 @@ def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
         }
     prompt = {
         "type": "chat",
-        "text": transcribed_text
+        "text": transcribed_text["text"]
     }
     llm_answer = run_chatbot(llm, prompt)
     print("LLM: ", llm_answer)
@@ -186,4 +185,5 @@ if __name__ =="__main__":
 
     # wav_to_spectrogram("my_recording.wav", "output_spec")
     # playback_audio("my_recording.wav")
-    speech_to_text("my_recording.wav")
+    # speech_to_text("my_recording.wav")
+    record_audio_to_llm_pipeline("my_recording2.wav")

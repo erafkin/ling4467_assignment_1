@@ -16,9 +16,11 @@ proc = psutil.Process()
 #load environment vars, set up devices, set up GPU usage tracking.
 load_dotenv() 
 device = 0 if torch.cuda.is_available() else -1
+gpu=None
 print("cuda available: ", torch.cuda.is_available())
-nvmlInit()
-gpu = nvmlDeviceGetHandleByIndex(0)
+if device == 0:
+    nvmlInit()
+    gpu = nvmlDeviceGetHandleByIndex(0)
 
 """
     Core Tasks

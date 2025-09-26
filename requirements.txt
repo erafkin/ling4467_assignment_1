@@ -4,4 +4,12 @@ torch
 accelerate
 python-dotenv
 psutil
-pynvml
+nvidia-ml-py
+sounddevice
+scipy
+numpy
+webrtcvad
+librosa
+matplotlib
+ffmpeg-python
+cerebras-cloud-sdk

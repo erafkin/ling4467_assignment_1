@@ -18,12 +18,16 @@ hf_token=HF_TOKEN
 cerebras_token=CEREBRAS_TOKEN
 ```
 
-## Run
+## Assignment 1: Chatbot
+### Run
 If you want to run the full eval, in `chatbot.py` set `mode="eval"`.
 To run in "chatbot" mode (command line interface where you type in tasks and prompts), run with `mode="chat"`
 In chatbot mode, swap out model object as desired.
 An example of the chatbot mode:
 ![example chat](./chatbot.png "Example Chat")
+
+## Assignment 2: Audio IO
+The code for assignment 2 is in the `audio_io.py` file. This file contains methods to save, load, and playback audio files, as well as record from the microphone. Additionally, you can load audio files and run an ASR model (`whisper-tiny`) as well as run a method to speak directly into the microphone and have an LLM respond to your speech. Finally, there is also a method to create specrograms. 
 
 ## Author
 Emma Rafkin: epr41@georgetown.edu

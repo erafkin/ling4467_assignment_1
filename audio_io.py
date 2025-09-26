@@ -2,8 +2,6 @@ import sounddevice as sd
 import librosa
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import signal
-from scipy.io import wavfile
 from transformers import pipeline
 import torch
 import wave
@@ -51,7 +49,7 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
     
     audio_data = []
     silence_count = 0
-    max_silence = 10  # Stop after 5 consecutive silent chunks
+    max_silence = 10  # Stop after 10 consecutive silent chunks
     
     def audio_callback(indata, frames, time, status):
         nonlocal silence_count
@@ -110,11 +108,13 @@ def load_audio_file(audio_path:str):
     return audio_data, sample_rate
 
 def wav_to_spectrogram(audio_file, output_file="output_spec"):
-
+    """
+        Take audio file, load it, create a spectrogram image, save image. 
+    """
     # tried matplotlib and scipy -- they were worse.
     data, sr = load_audio_file(audio_file)
 
-    D = librosa.stft(data, n_fft=1024)
+    D = librosa.stft(data, n_fft=4096)
     # in decibels 
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 
@@ -123,47 +123,28 @@ def wav_to_spectrogram(audio_file, output_file="output_spec"):
     plt.colorbar(format='%+2.0f dB')
     plt.title('Spectrogram')
     plt.tight_layout()
-    # elif method == "matplotlib":
-    #     data, sr = librosa.load(audio_file)
-
-    #     # If the audio is stereo, select one channel (e.g., the first channel)
-    #     if data.ndim > 1:
-    #         data = data[:, 0]
-
-    #     # Generate the spectrogram
-    #     plt.specgram(data, Fs=sr, NFFT=1024, noverlap=512, cmap='gray_r')
-
-    #     # Add labels and title
-    #     plt.xlabel('Time (s)')
-    #     plt.ylabel('Frequency (Hz)')
-    #     plt.title('Spectrogram of Audio File')
-    #     plt.colorbar(label='Intensity (dB)') # Add a colorbar for intensity
-    # elif method == "scipy":
-    #     sr, data = wavfile.read(audio_file)
-    #     if data.ndim > 1:
-    #         data = data[:, 0]
-    #     frequencies, times, spectrogram = signal.spectrogram(data, sr)
-    #     plt.pcolormesh(times, frequencies, np.log(spectrogram), rasterized=True, shading='auto', edgecolors='None' )
-    #     plt.imshow(spectrogram, cmap="gray_r")
-    #     plt.ylabel('Frequency [Hz]')
-    #     plt.xlabel('Time [sec]')
-    # else:
-    #     raise(f"method {method} not found. Optional methods include: scipy, matplotlib, and librosa")
-
     plt.savefig(output_file)
 
-def speech_to_text(audio_file:str):
+def speech_to_text(audio_file:str, model:str="openai/whisper-tiny"):
+    """
+        pass audio file to Whisper. Whisper can take just the filepath. Run on GPU if available. 
+    """
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     transcriber = pipeline(
         "automatic-speech-recognition",
-        model="openai/whisper-tiny",
+        model=model,
         device=device
     )
     transcribed_text = transcriber(audio_file, generate_kwargs={"language": "en"})
     return transcribed_text
 
 def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
+    """
+        String everything together! Record speech --> ASR --> Chatbot. 
+        Print answer and latency measurements (after recording ends)
+    """
     record_speech(output_filename=audio_output_file)
+    start_time = time.time()
     transcribed_text = speech_to_text(audio_output_file)
     print("Transcribed text: ", transcribed_text)
     llm = {
@@ -176,14 +157,16 @@ def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
         "text": transcribed_text["text"]
     }
     llm_answer = run_chatbot(llm, prompt)
+    end_time = time.time()
     print("LLM: ", llm_answer)
+    print("Overall time: ", end_time - start_time)
 
     
 
 if __name__ =="__main__":
-    # data = record_speech("my_recording2.wav")
+    # data = record_speech("a2_output/my_recording2.wav")
 
-    # wav_to_spectrogram("my_recording.wav", "output_spec")
-    # playback_audio("my_recording.wav")
-    # speech_to_text("my_recording.wav")
-    record_audio_to_llm_pipeline("my_recording2.wav")
+    wav_to_spectrogram("a2_output/my_recording.wav", "a2_output/output_spec_4096")
+    # playback_audio("a2_output/my_recording.wav")
+    # speech_to_text("a2_output/my_recording.wav")
+    # record_audio_to_llm_pipeline("a2_output/my_recording2.wav")

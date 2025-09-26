@@ -49,7 +49,7 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
     
     audio_data = []
     silence_count = 0
-    max_silence = 10  # Stop after 10 consecutive silent chunks
+    max_silence = 20  # Stop after 20 consecutive silent chunks
     
     def audio_callback(indata, frames, time, status):
         nonlocal silence_count
@@ -114,7 +114,7 @@ def wav_to_spectrogram(audio_file, output_file="output_spec"):
     # tried matplotlib and scipy -- they were worse.
     data, sr = load_audio_file(audio_file)
 
-    D = librosa.stft(data, n_fft=4096)
+    D = librosa.stft(data, n_fft=2048)
     # in decibels 
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 
@@ -166,7 +166,7 @@ def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
 if __name__ =="__main__":
     # data = record_speech("a2_output/my_recording2.wav")
 
-    wav_to_spectrogram("a2_output/my_recording.wav", "a2_output/output_spec_4096")
+    # wav_to_spectrogram("a2_output/my_recording.wav", "a2_output/output_spec_4096")
     # playback_audio("a2_output/my_recording.wav")
     # speech_to_text("a2_output/my_recording.wav")
-    # record_audio_to_llm_pipeline("a2_output/my_recording2.wav")
+    record_audio_to_llm_pipeline("a2_output/my_recording3.wav")

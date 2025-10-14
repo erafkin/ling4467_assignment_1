@@ -7,7 +7,7 @@ psutil
 nvidia-ml-py
 sounddevice
 scipy
-numpy
+numpy<2
 webrtcvad
 librosa
 matplotlib

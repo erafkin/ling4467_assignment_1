@@ -46,7 +46,14 @@ def compare_models(models, dataset_options):
             ds = load_dataset("openslr/librispeech_asr", split='test.clean', streaming=True).take(10)
             test_ds = ds.cast_column("audio", Audio(sampling_rate=16_000))
             test_ds = list(ds)
-
+        elif dataset == "fleurs":
+            ds = load_dataset("google/fleurs", "sv_se", streaming=True)["test"].take(10) # swedish
+            test_ds = ds.cast_column("audio", Audio(sampling_rate=16_000))
+            test_ds = test_ds.rename_column("transcription", "text")
+        elif dataset == "local":
+            ...
+        else:
+            raise Exception(f"dataset {dataset} does not exist")
         for model in models:
             whisper = load_whisper_pipeline(model_str=model, faster=False)
             run_model(whisper, test_ds, f"{dataset}_{model.split('/')[-1]}.csv")
@@ -54,5 +61,5 @@ def compare_models(models, dataset_options):
 
 if __name__ == "__main__":
     models = ["openai/whisper-tiny"]
-    ds_options = ["librispeech"]
+    ds_options = ["fleurs"]
     compare_models(models, ds_options)

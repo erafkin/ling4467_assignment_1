@@ -67,7 +67,42 @@ def compare_models(models, dataset_options):
                 whisper = load_whisper_pipeline(model_str=model, faster=False)
                 run_model(whisper, test_ds, f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv")
 
+def create_results_dataframe():
+    rows = []
+    for results_file in os.listdir("a3_whisper_assessment"):
+        if results_file != ".DS_Store":
+            csv = pd.read_csv(f"a3_whisper_assessment/{results_file}")
+            dataset = results_file.split("_")[0]
+            model = results_file.split("_")[1][:-4]
+            avg_wer = csv.wer.mean()
+            avg_rtf = csv.rtf.mean()
+            avg_cpu = csv.rtf.mean()
+            rows.append([ model, dataset, avg_wer, avg_rtf, avg_cpu])
+    df = pd.DataFrame(rows, columns = [ "model", "dataset","avg_wer", "avg_rtf", "avg_cpu"])
+    df = df.sort_values(by=["model", 'dataset'])
+    # transpose
+    df = df.T
+    # ChatGPT helped me make a multi-header df
+    header_rows = 2                     # how many rows belong to the header?
+    header = df.iloc[:header_rows]    # a tiny DataFrame with just those rows
+    data   = df.iloc[header_rows:]    # the real numeric data
+    cols_tuples = list(zip(*[header.iloc[i].tolist() for i in range(header_rows)]))
 
+    # Create the MultiIndex and assign it to the data frame
+    data.columns = pd.MultiIndex.from_tuples(cols_tuples)
+    print(data)
+    data.to_csv("a3_whisper_assessment/summary/phase_1_summary.csv")
+    data = data.T
+    # Convert the DataFrame to an HTML string
+    html_table = data.to_html()
+
+    # Print the HTML string (optional)
+    print(html_table)
+
+    # Save the HTML string to a file
+    with open("a3_whisper_assessment/summary/phase_1_summary.html", "w") as f:
+        f.write(html_table)
+    
 if __name__ == "__main__":
     models = [
                 "openai/whisper-tiny", 
@@ -79,4 +114,5 @@ if __name__ == "__main__":
                 "openai/whisper-tiny.en", 
                 "openai/whisper-large-v3-turbo"]
     ds_options = ["fleurs", "local", "librispeech"]
-    compare_models(models, ds_options)
+    # compare_models(models, ds_options)
+    create_results_dataframe()

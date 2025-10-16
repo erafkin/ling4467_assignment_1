@@ -9,23 +9,25 @@ from tqdm import tqdm
 from whisper_normalizer.basic import BasicTextNormalizer
 import psutil
 import os 
+import soundfile as sf
+import tempfile
 proc = psutil.Process()
 
 normalizer = BasicTextNormalizer()
 
-def load_whisper_pipeline(model_str:str, faster:bool=False):
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+def load_whisper_pipeline(model_str:str, faster:bool=False, device: str = "cpu"):
+    # device = "cuda:0" if torch.cuda.is_available() else "cpu"
     if faster:
-        return WhisperModel(model_str, device=device, compute_type="float16")
+        return WhisperModel(model_str, device=device, compute_type="float32")
     else:
         return pipeline(
             "automatic-speech-recognition",
             model=model_str,
             device=device,
-            dtype=torch.float32
+            dtype=torch.int8
         )
 
-def run_model(transcriber, dataset, output_name):
+def run_model(transcriber, dataset, output_name, phase):
     # Process audio files     
     # Calculate WER and RTF     
     # Return metrics and transcriptions      
@@ -33,7 +35,12 @@ def run_model(transcriber, dataset, output_name):
     for row in tqdm(dataset):
         start_time = time.time()
         proc.cpu_percent(interval=None)
-        transcription = transcriber(row["audio"]["array"])
+        if phase <= 2:
+            transcription = transcriber(row["audio"]["array"])
+        else:
+            segments, info = transcriber.transcribe(row["audio"]["array"])
+            transcription = [segment.text for segment in segments]
+            " ".join(transcription)
         cpu =  proc.cpu_percent(interval=None)
         end_time = time.time()
         rtf = (end_time - start_time) / (len(row["audio"]["array"])/row["audio"]["sampling_rate"])
@@ -45,33 +52,35 @@ def run_model(transcriber, dataset, output_name):
     df.to_csv(output_name, index=False)
 
 
-def compare_models(models, dataset_options):
+def compare_models(models, dataset_options, phase:int = 1):
     for dataset in dataset_options:
         if dataset == "librispeech":
             ds = load_dataset("openslr/librispeech_asr", split='test.clean', streaming=True).take(100)
-            test_ds = ds.cast_column("audio", Audio(sampling_rate=16_000))
-            test_ds = list(ds)
+            test_ds = test_ds.cast_column("audio", Audio(sampling_rate=16_000))
+            test_ds = list(test_ds)
         elif dataset == "fleurs":
-            ds = load_dataset("google/fleurs", "sv_se", streaming=True, trust_remote_code=True)["test"].take(100) # swedish
-            test_ds = ds.cast_column("audio", Audio(sampling_rate=16_000))
+            test_ds = load_dataset("google/fleurs", "sv_se", streaming=True, trust_remote_code=True)["test"].take(100) # swedish
+            test_ds = test_ds.cast_column("audio", Audio(sampling_rate=16_000))
             test_ds = test_ds.rename_column("transcription", "text")
         elif dataset == "local":
             df = pd.read_csv("dataset/dataset.csv")
-            ds = Dataset.from_pandas(df)
-            test_ds = ds.cast_column("audio", Audio(sampling_rate=16_000))
+            test_ds = Dataset.from_pandas(df)
+            test_ds = test_ds.cast_column("audio", Audio(sampling_rate=16_000))
 
         else:
             raise Exception(f"dataset {dataset} does not exist")
         for model in models:
             if not os.path.exists(f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv"):
-                whisper = load_whisper_pipeline(model_str=model, faster=False)
-                run_model(whisper, test_ds, f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv")
+                whisper = load_whisper_pipeline(model_str=model, faster=False if phase == 2 else True)
+                run_model(whisper, test_ds, f"a3_whisper_assessment/phase{phase}/{dataset}_{model.split('/')[-1]}.csv", phase)
+                if phase > 1:
+                    whisper.close()
 
-def create_results_dataframe():
+def create_results_dataframe(phase: int = 1):
     rows = []
     for results_file in os.listdir("a3_whisper_assessment"):
         if results_file != ".DS_Store":
-            csv = pd.read_csv(f"a3_whisper_assessment/{results_file}")
+            csv = pd.read_csv(f"a3_whisper_assessment/phase{phase}/{results_file}")
             dataset = results_file.split("_")[0]
             model = results_file.split("_")[1][:-4]
             avg_wer = csv.wer.mean()
@@ -91,7 +100,7 @@ def create_results_dataframe():
     # Create the MultiIndex and assign it to the data frame
     data.columns = pd.MultiIndex.from_tuples(cols_tuples)
     print(data)
-    data.to_csv("a3_whisper_assessment/summary/phase_1_summary.csv")
+    data.to_csv(f"a3_whisper_assessment/summary/phase_{phase}_summary.csv")
     data = data.T
     # Convert the DataFrame to an HTML string
     html_table = data.to_html()
@@ -100,19 +109,28 @@ def create_results_dataframe():
     print(html_table)
 
     # Save the HTML string to a file
-    with open("a3_whisper_assessment/summary/phase_1_summary.html", "w") as f:
+    with open(f"a3_whisper_assessment/summary/phase_{phase}_summary.html", "w") as f:
         f.write(html_table)
+
+def phase_1():
+    models = [
+            "openai/whisper-tiny", 
+            "openai/whisper-small", 
+            "openai/whisper-medium", 
+            "openai/whisper-base", 
+            "distil-whisper/distil-large-v3.5", 
+            "distil-whisper/distil-large-v2",
+            "openai/whisper-tiny.en", 
+            "openai/whisper-large-v3-turbo"]
+    ds_options = ["fleurs", "local", "librispeech"]
+    compare_models(models, ds_options)
+    create_results_dataframe()
+
+def phase_2():
+    models = ["openai/whisper-small", "distil-whisper/distil-large-v3.5", "openai/whisper-tiny" ]
+    ds_options = ["fleurs", "local", "librispeech"]
+    compare_models(models, ds_options, 2)
+    create_results_dataframe("phase2")
     
 if __name__ == "__main__":
-    models = [
-                "openai/whisper-tiny", 
-                "openai/whisper-small", 
-                "openai/whisper-medium", 
-                "openai/whisper-base", 
-                "distil-whisper/distil-large-v3.5", 
-                "distil-whisper/distil-large-v2",
-                "openai/whisper-tiny.en", 
-                "openai/whisper-large-v3-turbo"]
-    ds_options = ["fleurs", "local", "librispeech"]
-    # compare_models(models, ds_options)
-    create_results_dataframe()
+    phase_2()

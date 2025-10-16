@@ -8,6 +8,7 @@ from jiwer import wer
 from tqdm import tqdm
 from whisper_normalizer.basic import BasicTextNormalizer
 import psutil
+import os 
 proc = psutil.Process()
 
 normalizer = BasicTextNormalizer()
@@ -20,7 +21,8 @@ def load_whisper_pipeline(model_str:str, faster:bool=False):
         return pipeline(
             "automatic-speech-recognition",
             model=model_str,
-            device=device
+            device=device,
+            dtype=torch.float32
         )
 
 def run_model(transcriber, dataset, output_name):
@@ -61,8 +63,9 @@ def compare_models(models, dataset_options):
         else:
             raise Exception(f"dataset {dataset} does not exist")
         for model in models:
-            whisper = load_whisper_pipeline(model_str=model, faster=False)
-            run_model(whisper, test_ds, f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv")
+            if not os.path.exists(f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv"):
+                whisper = load_whisper_pipeline(model_str=model, faster=False)
+                run_model(whisper, test_ds, f"a3_whisper_assessment/{dataset}_{model.split('/')[-1]}.csv")
 
 
 if __name__ == "__main__":
@@ -70,10 +73,10 @@ if __name__ == "__main__":
                 "openai/whisper-tiny", 
                 "openai/whisper-small", 
                 "openai/whisper-medium", 
-                "openai/whisper-large-v2", 
-                "openai/whisper-large-v3", 
-                "distil-whisper/distil-large-v2"
-                "distil-whisper/distil-large-v3", 
+                "openai/whisper-base", 
+                "distil-whisper/distil-large-v3.5", 
+                "distil-whisper/distil-large-v2",
+                "openai/whisper-tiny.en", 
                 "openai/whisper-large-v3-turbo"]
     ds_options = ["fleurs", "local", "librispeech"]
     compare_models(models, ds_options)

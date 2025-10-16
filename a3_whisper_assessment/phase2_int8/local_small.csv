@@ -1,0 +1,104 @@
+transcription,reference,wer,rtf,cpu
+ hello ,hello ,0.0,0.03718170854780409,749.1
+ can you hear me ,can you hear me ,0.0,0.030832309422530527,768.0
+ i need your help right now ,i need your help right now ,0.0,0.03014353738314864,795.0
+ turn off the kitchen lights ,turn off the kitchen lights ,0.0,0.028500727244785855,778.5
+ she went to the store yesterday ,she went to the store yesterday ,0.0,0.03583033879597982,792.5
+ what time is the meeting ,what time is the meeting ,0.0,0.02880471569674832,778.5
+ he doesn t know the answer ,he doesn t know the answer ,0.0,0.03110457183723163,787.2
+ please speak more clearly ,please speak more clearly ,0.0,0.031203460693359376,783.7
+ i m on my way home ,i m on my way home ,0.0,0.03074213310524269,796.9
+ that was an amazing performance ,that was an amazing performance ,0.0,0.026983702742813417,797.6
+ where are my keys ,where are my keys ,0.0,0.03274122873942058,765.3
+ do you remember his name ,do you remember his name ,0.0,0.029902137927154994,788.0
+ i forgot to send the email ,i forgot to send the email ,0.0,0.03244127546037947,783.3
+ let s meet after lunch ,let s meet after lunch ,0.0,0.029411422672556406,737.6
+ this isn t what i expected ,this isn t what i expected ,0.0,0.025114698230095628,790.6
+ call me when you get there ,call me when you get there ,0.0,0.028742502813469874,788.0
+ don t open the window yet ,don t open the window yet ,0.0,0.031206082171342502,796.7
+ why is the sky so red ,why is the sky so red ,0.0,0.026350551181369357,795.6
+ i ll be there in five minutes ,i ll be there in five minutes ,0.0,0.0352212220184074,799.8
+ who left the lights on ,who left the lights on ,0.0,0.028731130264900828,801.3
+ that sounds like a great idea ,that sounds like a great idea ,0.0,0.030722441496672453,773.2
+ i love this kind of music ,i love this kind of music ,0.0,0.030839352896719265,800.2
+ she forgot her umbrella again ,she forgot her umbrella again ,0.0,0.022075562503750763,798.9
+ please bring me a glass of water ,please bring me a glass of water ,0.0,0.029151625447459036,781.3
+ the power went out last night ,the power went out last night ,0.0,0.028689491827756364,751.8
+ are you sure about that ,are you sure about that ,0.0,0.03367057352355032,811.9
+ don t forget to lock the door ,don t forget to lock the door ,0.0,0.029745338656378132,788.5
+ i need to charge my phone ,i need to charge my phone ,0.0,0.02906530887096912,807.7
+ let s take a break for now ,let s take a break for now ,0.0,0.034104182025579015,786.6
+ where did you put my book ,where did you put my book ,0.0,0.029339875493730818,780.8
+ he s never late for work ,he s never late for work ,0.0,0.0322280949308672,807.5
+ we should probably get going ,we should probably get going ,0.0,0.03432636418618447,808.5
+ this box is too heavy ,this box is too heavy ,0.0,0.02752345183800007,791.1
+ can you help me move this ,can you help me move this ,0.0,0.03603100776672363,769.9
+ i found your missing glove ,i found your missing glove ,0.0,0.030883452049771644,793.0
+ keep the change thank you ,keep the change thank you ,0.0,0.03051098549004757,784.2
+ i haven t eaten all day ,i haven t eaten all day ,0.0,0.04340246183062912,773.2
+ let me explain what happened ,let me explain what happened ,0.0,0.03232890226709561,806.5
+ you won t believe what i saw ,you won t believe what i saw ,0.0,0.031079079983008167,800.2
+ the package has not yet arrived ,the package has not yet arrived ,0.0,0.024538773756760817,773.3
+ please stay calm and focused ,please stay calm and focused ,0.0,0.02451910692102769,793.4
+ i ll meet you outside the cafe ,i ll meet you outside the café ,0.14285714285714285,0.027172173125834403,805.3
+ you need to restart your computer ,you need to restart your computer ,0.0,0.03012086258453577,747.0
+ they arrived earlier than expected ,they arrived earlier than expected ,0.0,0.031907088828809334,773.7
+ this coffee tastes really better ,this coffee tastes really bitter ,0.2,0.0335450014792198,790.2
+ the dog barked all night long ,the dog barked all night long ,0.0,0.02069761402799055,780.2
+ i accidentally deleted the file ,i accidentally deleted the file ,0.0,0.028511693206014512,789.8
+ let s try something different today ,let s try something different today ,0.0,0.03781898601635082,799.7
+ have you ever been to japan ,have you ever been to japan ,0.0,0.042347347035127526,765.7
+ this app keeps crashing on me ,this app keeps crashing on me ,0.0,0.02617670829037586,796.1
+ don t be afraid to ask questions ,don t be afraid to ask questions ,0.0,0.028328568327660654,797.7
+ what did he say to you ,what did he say to you ,0.0,0.0350213256375543,789.4
+ my shoes are completely soaked ,my shoes are completely soaked ,0.0,0.031841373443603514,793.1
+ he can run faster than me ,he can run faster than me ,0.0,0.03308233667592533,757.4
+ i m not ready for that yet ,i m not ready for that yet ,0.0,0.03663882231101012,794.9
+ do you want to come along ,do you want to come along ,0.0,0.034992674649772,776.7
+ that wasn t part of the plan ,that wasn t part of the plan ,0.0,0.03411673730419528,805.5
+ i need to cancel my appointment ,i need to cancel my appointment ,0.0,0.03386641305590433,798.7
+ who s coming to the party tonight ,who s coming to the party tonight ,0.0,0.035365878558549724,778.0
+ the train is running late again ,the train is running late again ,0.0,0.037338819589700784,786.0
+ we forgot to buy toilet paper ,we forgot to buy toilet paper ,0.0,0.03531308009706695,807.3
+ is that your final decision ,is that your final decision ,0.0,0.029915304326299408,775.3
+ she teaches english on the weekends ,she teaches english on the weekends ,0.0,0.03092942966355218,799.1
+ they re building a new park nearby ,they re building a new park nearby ,0.0,0.030065961435538573,793.8
+ i think we missed the exit ,i think we missed the exit ,0.0,0.03154681279109074,733.3
+ what s your favorite kind of food ,what s your favorite kind of food ,0.0,0.027118164038508193,790.8
+ i just cleaned the entire house ,i just cleaned the entire house ,0.0,0.030921662555021396,798.5
+ can you repeat that slowly ,can you repeat that slowly ,0.0,0.027884532665384227,781.0
+ i ll call you back later ,i ll call you back later ,0.0,0.03489736749344513,796.4
+ don t make the same mistake twice ,don t make the same mistake twice ,0.0,0.034648799896240236,798.3
+ he plays guitar in a band ,he plays guitar in a band ,0.0,0.03052697564563612,790.8
+ this book is really interesting ,this book is really interesting ,0.0,0.0357813101548415,764.7
+ we met on a rainy day ,we met on a rainy day ,0.0,0.04210040682838077,793.5
+ how many languages do you speak ,how many languages do you speak ,0.0,0.025462961482430647,789.6
+ the water is too cold to swim ,the water is too cold to swim ,0.0,0.03816680474714799,775.7
+ she left without saying goodbye ,she left without saying goodbye ,0.0,0.033612514105368786,751.2
+ try turning it off and on again ,try turning it off and on again ,0.0,0.029278281551079463,803.9
+ this is my favorite movie ever ,this is my favorite movie ever ,0.0,0.02725521723429362,784.4
+ i hope it doesn t ring in tomorrow ,i hope it doesn t rain tomorrow ,0.2857142857142857,0.03871306129123854,799.2
+ he forgot his password again ,he forgot his password again ,0.0,0.028686441224196862,795.4
+ the kids are playing outside now ,the kids are playing outside now ,0.0,0.03194508661750618,766.2
+ why are you whispering like that ,why are you whispering like that ,0.0,0.029035891805376326,801.5
+ my hands are freezing cold ,my hands are freezing cold ,0.0,0.031071145769575953,795.0
+ i m going to need more time ,i m going to need more time ,0.0,0.038794339713403736,777.1
+ let s keep this between us ,let s keep this between us ,0.0,0.02745600784716963,794.6
+ he won t answer his phone today ,he won t answer his phone today ,0.0,0.03409290659254876,798.7
+ that s a very good question ,that s a very good question ,0.0,0.03673632939656576,731.9
+ please don t make me do that ,please don t make me do that ,0.0,0.039109985033671066,789.9
+ i ll text you the address later ,i ll text you the address later ,0.0,0.03274715863741361,776.9
+ can you lower your voice please ,can you lower your voice please ,0.0,0.028331438700358074,766.3
+ let s walk instead of driving ,let s walk instead of driving ,0.0,0.028218371527535577,812.0
+ i have to leave in 10 minutes ,i have to leave in ten minutes ,0.14285714285714285,0.0267577019466716,787.1
+ that joke wasn t very funny ,that joke wasn t very funny ,0.0,0.030269300130973183,784.1
+ my laptop just shut down unexpectedly ,my laptop just shut down unexpectedly ,0.0,0.024358699658165683,795.0
+ how do i fix this issue ,how do i fix this issue ,0.0,0.031622282920345184,805.2
+ it happened without any warning ,it happened without any warning ,0.0,0.03226735010868361,796.0
+ i love walking in the rain ,i love walking in the rain ,0.0,0.03254068784477297,776.5
+ why did you cancel the meeting ,why did you cancel the meeting ,0.0,0.02916896943565753,766.2
+ that really caught me off guard ,that really caught me off guard ,0.0,0.039482483497032754,790.6
+ could you open the window please ,could you open the window please ,0.0,0.048836496950105855,555.7
+ we ve got a long way to go ,we ve got a long way to go ,0.0,0.029141840591929317,775.5
+ tell me more about your project ,tell me more about your project ,0.0,0.03303648794398588,769.4
+ i m not sure what you mean ,i m not sure what you mean ,0.0,0.0356892744700114,788.2

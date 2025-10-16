@@ -18,3 +18,4 @@ jiwer
 evaluate
 whisper-normalizer
 datasets<4
+ctranslate2==4.4.0

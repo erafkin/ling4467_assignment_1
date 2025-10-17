@@ -7,9 +7,15 @@ psutil
 nvidia-ml-py
 sounddevice
 scipy
-numpy
+numpy<2
 webrtcvad
 librosa
 matplotlib
 ffmpeg-python
 cerebras-cloud-sdk
+faster-whisper
+jiwer
+evaluate
+whisper-normalizer
+datasets<4
+ctranslate2==4.4.0

@@ -23,7 +23,7 @@ def save_audio_to_file(output_filename, audio_data, sample_rate, channels:int=1)
     
     print(f"Recording saved as {output_filename}")
 
-def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
+def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02, stop_vad:bool = True):
     """
     Base code writen by Qwen3-Coder-30B-A3B-Instruct
 
@@ -51,7 +51,7 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
     silence_count = 0
     max_silence = 20  # Stop after 20 consecutive silent chunks
     
-    def audio_callback(indata, frames, time, status):
+    def audio_callback_vad(indata, frames, time, status):
         nonlocal silence_count
         
         # Convert to bytes for VAD processing
@@ -71,20 +71,33 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02):
         # Stop if silence threshold reached
         return (None, sd.CallbackStop) if silence_count >= max_silence else (None, None)
     
+    def audio_callback(indata, frames, time, status):
+        audio_data.append(indata.copy())
+        
+    
     try:
         # Start recording with callback
-        with sd.InputStream(callback=audio_callback, 
-                          channels=channels, 
-                          samplerate=sample_rate, 
-                          dtype=dtype,
-                          blocksize=chunk_size):
-            
-            # Wait for recording to complete
-            while silence_count < max_silence:
-                time.sleep(0.01)  # Small delay to prevent busy waiting
+        if stop_vad:
+            with sd.InputStream(callback=audio_callback_vad, 
+                            channels=channels, 
+                            samplerate=sample_rate, 
+                            dtype=dtype,
+                            blocksize=chunk_size):
                 
-        print("Recording stopped due to silence")
-        
+                # Wait for recording to complete
+                while silence_count < max_silence:
+                    time.sleep(0.01)  # Small delay to prevent busy waiting
+                    
+            print("Recording stopped due to silence")
+        else:
+            with sd.InputStream(callback=audio_callback, 
+                            channels=channels, 
+                            samplerate=sample_rate, 
+                            dtype=dtype,
+                            blocksize=chunk_size):   
+                input()  # Wait for Enter key
+                print("Recording stopped")
+ 
     except Exception as e:
         print(f"Error during recording: {e}")
     
@@ -163,10 +176,10 @@ def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
 
     
 
-if __name__ =="__main__":
+# if __name__ =="__main__":
     # data = record_speech("a2_output/my_recording2.wav")
 
     # wav_to_spectrogram("a2_output/my_recording.wav", "a2_output/output_spec_4096")
     # playback_audio("a2_output/my_recording.wav")
     # speech_to_text("a2_output/my_recording.wav")
-    record_audio_to_llm_pipeline("a2_output/my_recording3.wav")
+    # record_audio_to_llm_pipeline("a2_output/my_recording3.wav")

@@ -125,8 +125,8 @@ def phase_1():
 
 def phase_1_again():
     models = [
-            "openai/whisper-tiny", 
             "openai/whisper-small", 
+            "openai/whisper-medium", 
             "distil-whisper/distil-large-v3.5"]
     ds_options = ["fleurs", "local", "librispeech"]
     compare_models(models, ds_options, 1)
@@ -139,4 +139,4 @@ def phase_2():
     create_results_dataframe(2)
     
 if __name__ == "__main__":
-    phase_2()
+    phase_1_again()

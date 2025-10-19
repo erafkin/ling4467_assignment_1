@@ -148,7 +148,8 @@ def speech_to_text(audio_file:str, model:str="openai/whisper-tiny"):
         transcriber = pipeline(
             "automatic-speech-recognition",
             model="openai/whisper-medium",
-            device=device
+            device=device,
+            dtype=torch.float16
         )
     else:
         transcriber = pipeline(

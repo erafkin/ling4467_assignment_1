@@ -9,7 +9,6 @@ import webrtcvad
 import numpy as np
 import time
 from chatbot import run_chatbot
-from faster_whisper import WhisperModel
 
 
 def save_audio_to_file(output_filename, audio_data, sample_rate, channels:int=1):
@@ -146,17 +145,18 @@ def speech_to_text(audio_file:str, model:str="openai/whisper-tiny"):
     """
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     if torch.cuda.is_available():
-        transcriber = WhisperModel("openai/whisper-medium", device=device, compute_type="int8")
-        segments, info = transcriber.transcribe(audio_file)
-        transcription = [segment.text for segment in segments]
-        transcription = " ".join(transcription)
+        transcriber = pipeline(
+            "automatic-speech-recognition",
+            model="openai/whisper-medium",
+            device=device
+        )
     else:
         transcriber = pipeline(
             "automatic-speech-recognition",
             model="openai/whisper-small",
             device=device
         )
-        transcription = transcriber(audio_file, generate_kwargs={"language": "en"})["text"]
+    transcription = transcriber(audio_file, generate_kwargs={"language": "en"})["text"]
     return transcription
 
 def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):

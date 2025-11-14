@@ -1,7 +1,8 @@
 from gtts import gTTS
-import torch
+import time
 from transformers import pipeline, FastSpeech2ConformerHifiGan
 import soundfile as sf
+import json
 
 def run_gtts(text):
     # Create a gTTS object
@@ -59,9 +60,17 @@ if __name__ == "__main__":
         "The algorithm uses stochastic gradient descent for optimization."
     ]
     models = [run_gtts, bark, mms, vits, speech_t5, fastspeech2_conformer]
-    for text in texts:
-        for model in models:
+    model_names = ["gtts", "bark", "mms", "vits", "speech_t5", "fastspeech2"]
+    latency = {}
+    for idx, model in enumerate(models):
+        latency[model_names[idx]] = []
+        for text in texts:
+            start = time.time()
             model(text)
+            end = time.time()
+            latency[model_names[idx]].append(end-start)
+    with open("a4_output/tts/latency.json", "w") as f:
+        json.dump(latency, f, indent=4)
 
 
 

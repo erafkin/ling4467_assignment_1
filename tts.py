@@ -20,7 +20,7 @@ def bark(text):
 def mms(text):
     synthesiser = pipeline("text-to-speech", "facebook/mms-1b")
     speech = synthesiser(text, forward_params={"do_sample": True})
-    sf.write(f"a4_output/tts/mms/{text.split(' ')[0]}.mp3", speech["audio".squeeze()], samplerate=speech["sampling_rate"])
+    sf.write(f"a4_output/tts/mms/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 def vits(text):
     synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng")
@@ -60,8 +60,8 @@ if __name__ == "__main__":
         "You are eating what?",
         "The algorithm uses stochastic gradient descent for optimization."
     ]
-    models = [run_gtts, bark, mms, vits, speech_t5, fastspeech2_conformer]
-    model_names = ["gtts", "bark", "mms", "vits", "speech_t5", "fastspeech2"]
+    models = [mms, vits, speech_t5, fastspeech2_conformer]#, run_gtts, bark,]
+    model_names = ["mms", "vits", "speech_t5", "fastspeech2"]#, "gtts", "bark",]
     latency = {}
     for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []

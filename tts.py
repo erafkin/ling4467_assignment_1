@@ -43,8 +43,7 @@ def speech_t5(text):
 
 
 def fastspeech2_conformer(text):
-    vocoder = FastSpeech2ConformerHifiGan.from_pretrained("espnet/fastspeech2_conformer_hifigan")
-    synthesiser = pipeline(model="espnet/fastspeech2_conformer", vocoder=vocoder)
+    synthesiser = pipeline(model="vibevoice/VibeVoice-1.5B")
 
     speech = synthesiser(text)
 
@@ -69,7 +68,7 @@ if __name__ == "__main__":
         "The algorithm uses stochastic gradient descent for optimization."
     ]
     models = [ vits, speech_t5, fastspeech2_conformer, bark_lg, run_gtts, bark]
-    model_names = [ "vits", "speech_t5", "fastspeech2",  "bark_lg", "gtts", "bark",]
+    model_names = [ "vits", "speech_t5", "vibe",  "bark_lg", "gtts", "bark",]
     latency = {}
     for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []

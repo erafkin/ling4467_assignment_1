@@ -9,7 +9,7 @@ import torch
 from parler_tts import ParlerTTSForConditionalGeneration
 
 
-
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
 def run_gtts(text):
     # Create a gTTS object
     tts = gTTS(text)
@@ -18,19 +18,19 @@ def run_gtts(text):
     tts.save(f"a4_output/tts/gtts/{text.split(' ')[0]}.mp3")
 
 def bark(text):
-    synthesiser = pipeline("text-to-speech", "suno/bark-small")
+    synthesiser = pipeline("text-to-speech", "suno/bark-small", device=device)
     speech = synthesiser(text, forward_params={"do_sample": True})
     sf.write(f"a4_output/tts/bark/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
 def bark_lg(text):
-    synthesiser = pipeline("text-to-speech", "suno/bark")
+    synthesiser = pipeline("text-to-speech", "suno/bark", device=device)
     speech = synthesiser(text, forward_params={"do_sample": True})
     sf.write(f"a4_output/tts/bark_lg/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
 def vits(text):
-    synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng")
+    synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng", device=device)
     speech = synthesiser(text)
     sf.write(f"a4_output/tts/vits/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
    
@@ -38,16 +38,13 @@ def vits(text):
 def speech_t5(text):
     embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
     speaker_embedding = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
-    synthesiser = pipeline("text-to-speech", "microsoft/speecht5_tts")
+    synthesiser = pipeline("text-to-speech", "microsoft/speecht5_tts", device=device)
     
     speech = synthesiser(text, forward_params={"speaker_embeddings": speaker_embedding})
     sf.write(f"a4_output/tts/speech_t5/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
 def parler(text):
-
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
-
     model = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-mini-v1.1").to(device)
     tokenizer = AutoTokenizer.from_pretrained("parler-tts/parler-tts-mini-v1.1")
     description_tokenizer = AutoTokenizer.from_pretrained(model.config.text_encoder._name_or_path)
@@ -92,7 +89,3 @@ if __name__ == "__main__":
             latency[model_names[idx]].append(end-start)
     with open("a4_output/tts/latency.json", "w") as f:
         json.dump(latency, f, indent=4)
-
-
-
-

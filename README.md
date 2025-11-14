@@ -18,6 +18,8 @@ hf_token=HF_TOKEN
 cerebras_token=CEREBRAS_TOKEN
 ```
 
+The whole chatbot pipeline can be run if via the `record_audio_to_llm_pipeline` method in `audio_io.py`.
+
 ## Assignment 1: Chatbot
 ### Run
 If you want to run the full eval, in `chatbot.py` set `mode="eval"`.
@@ -37,6 +39,6 @@ The code for assignment 3 can be found in `whisper_assessment.py`. This script l
 ## Assignment 4: TTS
 The first part of the assignment involves running Meta's EnCodec model to look at compression rates/success. Code for this can be found in `codec.py`. This script looks for files in a folder called `a4_input/codec`, encodes the audio, and then decodes it at various codebook amounts. Stats for each file/audio compression will be output in a csv called `stats.csv`
 
-The second part: 
+The second part: I tested 6 TTS models on 16 prompts. Latency and A/B testing results can be found in `a4_output`. Scripts for running the models on the prompts can be found in `tts.py` while the script for the A/B testing (along with the results from when I accidentally killed it half way through) can be found in `tts_eval.py`.
 ## Author
 Emma Rafkin: epr41@georgetown.edu

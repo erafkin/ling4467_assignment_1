@@ -62,6 +62,7 @@ def parler(text):
 if __name__ == "__main__":
     texts = [
         "Hello world, my name is Emma Rafkin",
+        "I am ready to eat dinner.",
         "It is cold outside today",
         "He likes to read, but he read the book that she is reading already",
         "She blew out a breath, and the cold air made the blown breath appear blue",
@@ -75,7 +76,6 @@ if __name__ == "__main__":
         "The algorithm uses stochastic gradient descent for optimization.",
         "What are you eating?",
         "You are eating what?",
-        "The algorithm uses stochastic gradient descent for optimization."
     ]
     models = [ vits, speech_t5, parler, bark_lg, run_gtts, bark]
     model_names = [ "vits", "speech_t5", "parler",  "bark_lg", "gtts", "bark",]

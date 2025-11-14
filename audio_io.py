@@ -9,6 +9,7 @@ import webrtcvad
 import numpy as np
 import time
 from chatbot import run_chatbot
+from gtts import gTTS
 
 
 def save_audio_to_file(output_filename, audio_data, sample_rate, channels:int=1):
@@ -160,7 +161,7 @@ def speech_to_text(audio_file:str, model:str="openai/whisper-tiny"):
     transcription = transcriber(audio_file, generate_kwargs={"language": "en"})["text"]
     return transcription
 
-def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
+def record_audio_to_llm_pipeline(audio_output_file:str="recorded_audio.wav"):
     """
         String everything together! Record speech --> ASR --> Chatbot. 
         Print answer and latency measurements (after recording ends)
@@ -179,16 +180,17 @@ def record_audio_to_llm_pipeline(audio_output_file:str="a2/recorded_audio.wav"):
         "text": transcribed_text["text"]
     }
     llm_answer = run_chatbot(llm, prompt)
+    tts = gTTS(llm_answer)
+    sd.play(tts, 16000)
     end_time = time.time()
-    print("LLM: ", llm_answer)
     print("Overall time: ", end_time - start_time)
 
     
 
-# if __name__ =="__main__":
+if __name__ =="__main__":
     # data = record_speech("a2_output/my_recording2.wav")
 
     # wav_to_spectrogram("a2_output/my_recording.wav", "a2_output/output_spec_4096")
     # playback_audio("a2_output/my_recording.wav")
     # speech_to_text("a2_output/my_recording.wav")
-    # record_audio_to_llm_pipeline("a2_output/my_recording3.wav")
+    record_audio_to_llm_pipeline()

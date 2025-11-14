@@ -11,6 +11,8 @@ import numpy as np
 from cerebras.cloud.sdk import Cerebras
 from pynvml import *
 import psutil
+from gtts import gTTS
+import sounddevice as sd
 proc = psutil.Process()
 
 #load environment vars, set up devices, set up GPU usage tracking.
@@ -297,7 +299,6 @@ def run_eval():
     df_times = pd.DataFrame(model_times, columns=["model", "model_load_time", "mean_answer_time","source","name"])
     df_times.to_csv("./output/model_specs.csv", index=False)
 
-
 if __name__ == "__main__":
     mode = "chat" # "eval" or "chat"
     if mode == "eval":
@@ -363,7 +364,8 @@ if __name__ == "__main__":
                     if prompt["type"] == "chat":
                         history.append("user: " + text)
                         history.append("chatbot: " + answer)
-                    print(answer)
+                    tts = gTTS(answer)
+                    sd.play(tts, 16000)
             except EOFError:       
                 print("\nEOF received – exiting.")
                 break

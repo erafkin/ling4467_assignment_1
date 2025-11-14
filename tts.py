@@ -4,6 +4,9 @@ from transformers import pipeline, FastSpeech2ConformerHifiGan
 import soundfile as sf
 import json
 from tqdm import tqdm
+from datasets import load_dataset
+import torch
+
 
 def run_gtts(text):
     # Create a gTTS object
@@ -26,13 +29,16 @@ def bark_lg(text):
 
 def vits(text):
     synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng")
-    speech = synthesiser(text, forward_params={"do_sample": True})
+    speech = synthesiser(text)
     sf.write(f"a4_output/tts/vits/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
    
 
 def speech_t5(text):
+    embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
+    speaker_embedding = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
     synthesiser = pipeline("text-to-speech", "microsoft/speecht5_tts")
-    speech = synthesiser(text, forward_params={"do_sample": True})
+    
+    speech = synthesiser(text, forward_params={"speaker_embeddings": speaker_embedding})
     sf.write(f"a4_output/tts/speech_t5/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
@@ -62,8 +68,8 @@ if __name__ == "__main__":
         "You are eating what?",
         "The algorithm uses stochastic gradient descent for optimization."
     ]
-    models = [bark_lg, vits, speech_t5, fastspeech2_conformer, run_gtts, bark]
-    model_names = ["bark_lg", "vits", "speech_t5", "fastspeech2",  "gtts", "bark",]
+    models = [ vits, speech_t5, fastspeech2_conformer, bark_lg, run_gtts, bark]
+    model_names = [ "vits", "speech_t5", "fastspeech2",  "bark_lg", "gtts", "bark",]
     latency = {}
     for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []

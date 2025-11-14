@@ -3,6 +3,7 @@ import time
 from transformers import pipeline, FastSpeech2ConformerHifiGan
 import soundfile as sf
 import json
+from tqdm import tqdm
 
 def run_gtts(text):
     # Create a gTTS object
@@ -62,9 +63,9 @@ if __name__ == "__main__":
     models = [run_gtts, bark, mms, vits, speech_t5, fastspeech2_conformer]
     model_names = ["gtts", "bark", "mms", "vits", "speech_t5", "fastspeech2"]
     latency = {}
-    for idx, model in enumerate(models):
+    for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []
-        for text in texts:
+        for text in tqdm(texts):
             start = time.time()
             model(text)
             end = time.time()

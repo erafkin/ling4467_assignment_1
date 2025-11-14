@@ -19,6 +19,5 @@ evaluate
 whisper-normalizer
 datasets<4
 ctranslate2==4.4.0
-git+https://github.com/facebookresearch/encodec.git
+# git+https://github.com/facebookresearch/encodec.git
 gTTS
-chatterbox-tts

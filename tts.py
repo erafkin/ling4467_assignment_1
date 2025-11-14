@@ -4,20 +4,6 @@ from transformers import pipeline, FastSpeech2ConformerHifiGan
 import soundfile as sf
 import json
 from tqdm import tqdm
-import torchaudio as ta
-from chatterbox.tts import ChatterboxTTS
-
-
-
-text = "Ezreal and Jinx teamed up with Ahri, Yasuo, and Teemo to take down the enemy's Nexus in an epic late-game pentakill."
-
-
-
-def run_chatterbox(text):
-    model = ChatterboxTTS.from_pretrained(device="cuda")
-    wav = model.generate(text)
-    sf.write(f"a4_output/tts/vits/{text.split(' ')[0]}.mp3", wav, samplerate=model.sr)
-
 
 def run_gtts(text):
     # Create a gTTS object
@@ -30,6 +16,13 @@ def bark(text):
     synthesiser = pipeline("text-to-speech", "suno/bark-small")
     speech = synthesiser(text, forward_params={"do_sample": True})
     sf.write(f"a4_output/tts/bark/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
+
+
+def bark_lg(text):
+    synthesiser = pipeline("text-to-speech", "suno/bark")
+    speech = synthesiser(text, forward_params={"do_sample": True})
+    sf.write(f"a4_output/tts/bark_lg/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
+
 
 def vits(text):
     synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng")
@@ -69,8 +62,8 @@ if __name__ == "__main__":
         "You are eating what?",
         "The algorithm uses stochastic gradient descent for optimization."
     ]
-    models = [run_chatterbox, vits, speech_t5, fastspeech2_conformer, run_gtts, bark]
-    model_names = ["chatterbox", "vits", "speech_t5", "fastspeech2",  "gtts", "bark",]
+    models = [bark_lg, vits, speech_t5, fastspeech2_conformer, run_gtts, bark]
+    model_names = ["bark_lg", "vits", "speech_t5", "fastspeech2",  "gtts", "bark",]
     latency = {}
     for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []

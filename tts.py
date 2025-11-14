@@ -15,23 +15,23 @@ def run_gtts(text):
 def bark(text):
     synthesiser = pipeline("text-to-speech", "suno/bark-small")
     speech = synthesiser(text, forward_params={"do_sample": True})
-    sf.write(f"a4_output/tts/bark/{text.split(' ')[0]}.mp3", data=speech["audio"].squeeze(), rate=speech["sampling_rate"])
+    sf.write(f"a4_output/tts/bark/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 def mms(text):
     synthesiser = pipeline("text-to-speech", "facebook/mms-1b")
     speech = synthesiser(text, forward_params={"do_sample": True})
-    sf.write(f"a4_output/tts/mms/{text.split(' ')[0]}.mp3", data=speech["audio".squeeze()], rate=speech["sampling_rate"])
+    sf.write(f"a4_output/tts/mms/{text.split(' ')[0]}.mp3", speech["audio".squeeze()], samplerate=speech["sampling_rate"])
 
 def vits(text):
     synthesiser = pipeline("text-to-speech",  "facebook/mms-tts-eng")
     speech = synthesiser(text, forward_params={"do_sample": True})
-    sf.write(f"a4_output/tts/vits/{text.split(' ')[0]}.mp3", data=speech["audio"].squeeze(), rate=speech["sampling_rate"])
+    sf.write(f"a4_output/tts/vits/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
    
 
 def speech_t5(text):
     synthesiser = pipeline("text-to-speech", "microsoft/speecht5_tts")
     speech = synthesiser(text, forward_params={"do_sample": True})
-    sf.write(f"a4_output/tts/speech_t5/{text.split(' ')[0]}.mp3", data=speech["audio"].squeeze(), rate=speech["sampling_rate"])
+    sf.write(f"a4_output/tts/speech_t5/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
 def fastspeech2_conformer(text):

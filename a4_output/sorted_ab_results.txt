@@ -1,0 +1,6 @@
+bark_lg      47
+speech_t5    42
+gtts         36
+bark         35
+parler       28
+vits         10

@@ -1,11 +1,13 @@
 from gtts import gTTS
 import time
-from transformers import pipeline, FastSpeech2ConformerHifiGan
+from transformers import pipeline, AutoTokenizer
 import soundfile as sf
 import json
 from tqdm import tqdm
 from datasets import load_dataset
 import torch
+from parler_tts import ParlerTTSForConditionalGeneration
+
 
 
 def run_gtts(text):
@@ -42,12 +44,23 @@ def speech_t5(text):
     sf.write(f"a4_output/tts/speech_t5/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
 
-def fastspeech2_conformer(text):
-    synthesiser = pipeline(model="vibevoice/VibeVoice-1.5B")
+def parler(text):
 
-    speech = synthesiser(text)
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    sf.write(f"a4_output/tts/fastspeech2/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
+    model = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-mini-v1.1").to(device)
+    tokenizer = AutoTokenizer.from_pretrained("parler-tts/parler-tts-mini-v1.1")
+    description_tokenizer = AutoTokenizer.from_pretrained(model.config.text_encoder._name_or_path)
+
+    prompt = text
+    description = "A female speaker delivers a slightly expressive and animated speech with a moderate speed and pitch. The recording is of very high quality, with the speaker's voice sounding clear and very close up."
+
+    input_ids = description_tokenizer(description, return_tensors="pt").input_ids.to(device)
+    prompt_input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
+
+    generation = model.generate(input_ids=input_ids, prompt_input_ids=prompt_input_ids)
+    audio_arr = generation.cpu().numpy().squeeze()
+    sf.write(f"a4_output/tts/parler/{text.split(' ')[0]}.mp3", audio_arr, model.config.sampling_rate)
 
 if __name__ == "__main__":
     texts = [
@@ -67,8 +80,8 @@ if __name__ == "__main__":
         "You are eating what?",
         "The algorithm uses stochastic gradient descent for optimization."
     ]
-    models = [ vits, speech_t5, fastspeech2_conformer, bark_lg, run_gtts, bark]
-    model_names = [ "vits", "speech_t5", "vibe",  "bark_lg", "gtts", "bark",]
+    models = [ vits, speech_t5, parler, bark_lg, run_gtts, bark]
+    model_names = [ "vits", "speech_t5", "parler",  "bark_lg", "gtts", "bark",]
     latency = {}
     for idx, model in tqdm(enumerate(models)):
         latency[model_names[idx]] = []

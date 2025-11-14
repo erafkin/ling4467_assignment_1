@@ -12,6 +12,7 @@ from chatbot import run_chatbot
 from gtts import gTTS
 
 
+
 def save_audio_to_file(output_filename, audio_data, sample_rate, channels:int=1):
     # Concatenate all audio chunks
     full_audio = np.concatenate(audio_data, axis=0)
@@ -47,7 +48,7 @@ def record_speech(output_filename, sample_rate=16000, chunk_duration=0.02, stop_
     # Calculate chunk size based on duration
     chunk_size = int(sample_rate * chunk_duration)
     
-    print("Listening... Speak now (will stop automatically when silent)")
+    print(f"Listening... Speak now (will stop {"automatically when silent" if stop_vad else "on Enter"})")
     
     audio_data = []
     silence_count = 0
@@ -166,7 +167,7 @@ def record_audio_to_llm_pipeline(audio_output_file:str="recorded_audio.wav"):
         String everything together! Record speech --> ASR --> Chatbot. 
         Print answer and latency measurements (after recording ends)
     """
-    record_speech(output_filename=audio_output_file)
+    record_speech(output_filename=audio_output_file, stop_vad=False)
     start_time = time.time()
     transcribed_text = speech_to_text(audio_output_file)
     print("Transcribed text: ", transcribed_text)
@@ -177,12 +178,13 @@ def record_audio_to_llm_pipeline(audio_output_file:str="recorded_audio.wav"):
         }
     prompt = {
         "type": "chat",
-        "text": transcribed_text["text"]
+        "text": transcribed_text
     }
     llm_answer = run_chatbot(llm, prompt)
     tts = gTTS(llm_answer)
-    sd.play(tts, 16000)
-    end_time = time.time()
+    tts.save("answer.wav")
+    end_time=time.time()
+    playback_audio("answer.wav")
     print("Overall time: ", end_time - start_time)
 
     

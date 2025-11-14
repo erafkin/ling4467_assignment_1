@@ -40,7 +40,7 @@ def fastspeech2_conformer(text):
     vocoder = FastSpeech2ConformerHifiGan.from_pretrained("espnet/fastspeech2_conformer_hifigan")
     synthesiser = pipeline(model="espnet/fastspeech2_conformer", vocoder=vocoder)
 
-    speech = synthesiser("Hello, my dog is cooler than you!")
+    speech = synthesiser(text)
 
     sf.write(f"a4_output/tts/fastspeech2/{text.split(' ')[0]}.mp3", speech["audio"].squeeze(), samplerate=speech["sampling_rate"])
 
